@@ -1,0 +1,496 @@
+import { useState, Suspense, lazy } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Lazy load the encapsulated WebGL canvas
+const AwardsWebGL = lazy(() => import('../components/AwardsWebGL'));
+
+// Mock Data for Categories Restored to "Fire" Grid Format
+const awardCategories: any[] = [
+  // Organization - Contribution
+  { id: 'org-cont-1', type: 'Organization', category: 'Contribution', title: 'Strategic Value Creation Champion' },
+  { id: 'org-cont-2', type: 'Organization', category: 'Contribution', title: 'Global Collaboration Champion' },
+  { id: 'org-cont-3', type: 'Organization', category: 'Contribution', title: 'Agentic Enterprise Champion' },
+  
+  // Organization - Function
+  { id: 'org-func-1', type: 'Organization', category: 'Function', title: 'Product Development Brilliance' },
+  { id: 'org-func-2', type: 'Organization', category: 'Function', title: 'Agile & Lean Transformation Brilliance' },
+  { id: 'org-func-3', type: 'Organization', category: 'Function', title: 'Automation and Process Brilliance' },
+
+  // Organization - Talent
+  { id: 'org-tal-1', type: 'Organization', category: 'Talent', title: 'Workplace Culture' },
+  { id: 'org-tal-2', type: 'Organization', category: 'Talent', title: 'DEI Initiatives' },
+  { id: 'org-tal-3', type: 'Organization', category: 'Talent', title: 'Learning and Development' },
+
+  // Organization - Headlining
+  { id: 'org-head-1', type: 'Organization', category: 'Headlining', title: 'Best Tech / Retail / FSI CoE' },
+  { id: 'org-head-2', type: 'Organization', category: 'Headlining', title: 'Best Engineering CoE' },
+  { id: 'org-head-3', type: 'Organization', category: 'Headlining', title: 'Best AI CoE' },
+  { id: 'org-head-4', type: 'Organization', category: 'Headlining', title: 'Best Data and Analytics CoE' },
+
+  // Individual
+  { id: 'ind-1', type: 'Individual', category: 'Individual Highlights', title: 'Innovation Pioneer' },
+  { id: 'ind-2', type: 'Individual', category: 'Individual Highlights', title: 'Team Building Dynamo' },
+  { id: 'ind-3', type: 'Individual', category: 'Individual Highlights', title: 'Scale Triumphant' },
+  { id: 'ind-4', type: 'Individual', category: 'Individual Highlights', title: 'Technology Visionary' },
+];
+
+const MAIN_SITE = 'https://coe-nexus.com';
+
+export function AwardsPage() {
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [activeSubFilter, setActiveSubFilter] = useState('All');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const filteredCategories = awardCategories.filter((cat) => {
+    const typeMatch = activeFilter === 'All' || cat.type === activeFilter;
+    const subMatch = activeSubFilter === 'All' || cat.category === activeSubFilter;
+    return typeMatch && subMatch;
+  });
+
+  return (
+    <div className="min-h-screen bg-[#050510] overflow-hidden text-white font-sans relative">
+      {/* Background WebGL Canvas taking over the Hero section completely */}
+      <div className="absolute inset-0 h-[100vh] w-full z-0 pointer-events-none opacity-80 mix-blend-screen">
+         <Suspense fallback={
+           <div className="w-full h-full flex flex-col items-center justify-center bg-[#0c1222]">
+             <motion.div 
+               animate={{ opacity: [0.3, 1, 0.3], scale: [0.98, 1, 0.98] }} 
+               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+               className="text-[#FFD700] font-sans tracking-[0.2em] text-sm font-semibold"
+             >
+               Loading Experience...
+             </motion.div>
+           </div>
+         }>
+          <AwardsWebGL />
+         </Suspense>
+      </div>
+      
+      {/* Soft dark vignette gradient to frame the 3D element smoothly */}
+      <div className="absolute inset-0 h-[100vh] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-transparent to-[#050510] z-0 pointer-events-none" />
+
+      {/* Navigation */}
+      <nav className="relative z-50 flex justify-between items-center px-4 sm:px-8 py-4 sm:py-6 w-full text-sm font-medium tracking-wide text-white/80 border-b border-white/10 bg-[#030305]/60 backdrop-blur-xl transition-all">
+        {/* Left Links (Desktop) */}
+        <div className="hidden lg:flex gap-10 flex-1">
+          <ul className="flex items-center gap-8">
+            <li><a href={MAIN_SITE} className="hover:text-[#FFD700] transition-colors">Home</a></li>
+            <li><a href={`${MAIN_SITE}/#overview`} className="hover:text-[#FFD700] transition-colors">Overview</a></li>
+            <li><a href={`${MAIN_SITE}/#speakers`} className="hover:text-[#FFD700] transition-colors">Speakers</a></li>
+            <li><a href={`${MAIN_SITE}/#agenda`} className="hover:text-[#FFD700] transition-colors">Agenda</a></li>
+          </ul>
+        </div>
+
+        {/* Center Logo */}
+        <div className="flex-shrink-0 flex items-center justify-center lg:absolute lg:left-1/2 lg:-translate-x-1/2">
+            <a href={MAIN_SITE} aria-label="CoE Nexus">
+              <img src="/CoE Brand Logo.png" alt="CoE Nexus Logo" className="h-[32px] sm:h-[40px] w-auto object-contain invert opacity-90 transition-opacity hover:opacity-100" />
+            </a>
+        </div>
+
+        {/* Right Actions (Desktop) */}
+        <div className="hidden lg:flex items-center gap-8 flex-1 justify-end">
+          <ul className="flex items-center gap-8 mr-4">
+            <li><a href="#categories" className="hover:text-[#FFD700] transition-colors">Categories</a></li>
+            <li><a href={`${MAIN_SITE}/#contact`} className="hover:text-[#FFD700] transition-colors">Contact</a></li>
+            <li><a href="/" className="text-[#FFD700] font-semibold">Awards</a></li>
+          </ul>
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-6 py-2 rounded-full border border-[#FFD700]/30 hover:border-[#FFD700]/80 bg-[#FFD700]/5 text-[#FFD700] font-semibold tracking-wider text-xs uppercase transition-colors"
+          >
+            Vote Now
+          </motion.button>
+        </div>
+
+        {/* Mobile Menu Toggle */}
+        <div className="lg:hidden flex items-center gap-4">
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-4 py-1.5 rounded-full border border-[#FFD700]/30 hover:border-[#FFD700]/80 bg-[#FFD700]/5 text-[#FFD700] font-semibold tracking-wider text-[10px] uppercase transition-colors"
+          >
+            Vote
+          </motion.button>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="p-2 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD700]/50 rounded-lg"
+            aria-label="Toggle Menu"
+          >
+             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+             </svg>
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Menu Dropdown */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="lg:hidden relative z-40 bg-[#030305]/95 border-b border-white/10 backdrop-blur-xl overflow-hidden"
+          >
+            <nav className="flex flex-col p-4 space-y-4">
+              <a href={MAIN_SITE} className="text-white/80 hover:text-[#FFD700] font-medium" onClick={() => setIsMenuOpen(false)}>Home</a>
+              <a href={`${MAIN_SITE}/#overview`} className="text-white/80 hover:text-[#FFD700] font-medium" onClick={() => setIsMenuOpen(false)}>Overview</a>
+              <a href={`${MAIN_SITE}/#speakers`} className="text-white/80 hover:text-[#FFD700] font-medium" onClick={() => setIsMenuOpen(false)}>Speakers</a>
+              <a href={`${MAIN_SITE}/#agenda`} className="text-white/80 hover:text-[#FFD700] font-medium" onClick={() => setIsMenuOpen(false)}>Agenda</a>
+              <a href="#categories" className="text-white/80 hover:text-[#FFD700] font-medium" onClick={() => setIsMenuOpen(false)}>Categories</a>
+              <a href={`${MAIN_SITE}/#contact`} className="text-white/80 hover:text-[#FFD700] font-medium" onClick={() => setIsMenuOpen(false)}>Contact</a>
+              <a href="/" className="text-[#FFD700] font-medium" onClick={() => setIsMenuOpen(false)}>Awards</a>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main Hero View - Clean, modest, upscale elegant text */}
+      <main className="relative z-10 w-full min-h-[85vh] flex flex-col items-center justify-center pointer-events-none">
+        
+        <div className="flex flex-col items-center justify-center select-none z-10 text-center space-y-6 pt-12">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.2, ease: 'easeOut' }}
+            className="flex items-center gap-4 mb-4"
+          >
+            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#FFD700]/50" />
+            <span className="text-[#FFD700] text-xs font-medium tracking-[0.3em] uppercase">The Pinnacle of Excellence</span>
+            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#FFD700]/50" />
+          </motion.div>
+          
+          <motion.h1 
+            className="text-6xl md:text-8xl lg:text-9xl tracking-[0.05em] font-medium text-white drop-shadow-xl"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, delay: 0.2, ease: 'easeOut' }}
+          >
+            COE AWARDS
+          </motion.h1>
+          
+          <motion.h2 
+            className="text-lg md:text-xl font-light text-white/60 tracking-[0.1em] max-w-3xl mt-6 leading-relaxed"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, delay: 0.4, ease: 'easeOut' }}
+          >
+            Celebrating visionary leadership, breakthrough <br className="hidden md:block" />
+            innovation, and global impact across industries
+          </motion.h2>
+        </div>
+      </main>
+
+      <div className="bg-[#050510] relative z-20 w-full pt-16 border-t border-[#FFD700]/10 shadow-[0_-20px_50px_rgba(5,5,16,1)]">
+        {/* Bottom Information Text */}
+        <div className="max-w-[85vw] mx-auto text-center pb-24 text-white font-medium">
+          <motion.h2 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-3xl md:text-4xl lg:text-5xl tracking-wide font-light leading-relaxed text-white/90"
+          >
+            An esteemed recognition platform honoring <br />
+            <span className="text-[#FFD700] font-normal">outstanding achievements</span> worldwide.
+          </motion.h2>
+        </div>
+
+        {/* Why Nominate Section */}
+        <section id="why-nominate" className="max-w-[85vw] mx-auto pb-32">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h3 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6">
+              Why <span className="text-[#FFD700]">Nominate?</span>
+            </h3>
+            <p className="text-lg md:text-xl text-white/60 max-w-3xl mx-auto leading-relaxed">
+              Stand out amongst peers, celebrate your team's hard work, and amplify the true power of your digital transformations to a global audience.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Card 1 */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -10 }}
+              transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+              className="relative bg-[#080d19] border border-[#1a253f] p-8 group hover:border-[#FFD700]/50 transition-all duration-500 overflow-hidden hover:shadow-[0_0_40px_rgba(255,215,0,0.15)] cursor-pointer"
+            >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[#00ffff]/0 group-hover:bg-[#FFD700]/10 blur-[50px] transition-all duration-700 rounded-full pointer-events-none" />
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00ffff]/50 group-hover:border-[#FFD700] group-hover:w-8 group-hover:h-8 transition-all duration-500" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00ffff]/50 group-hover:border-[#FFD700] group-hover:w-8 group-hover:h-8 transition-all duration-500" />
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0)_95%,rgba(0,255,255,0.05)_100%)] bg-[length:100%_4px] group-hover:opacity-50 transition-opacity duration-500" />
+              
+              <div className="relative z-10 transform group-hover:scale-[1.02] transition-transform duration-500">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="w-12 h-12 rounded bg-[#0b1426] border border-[#00ffff]/20 flex items-center justify-center group-hover:border-[#FFD700]/50 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-[0_0_0_rgba(0,255,255,0)] group-hover:shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+                    <svg className="w-6 h-6 text-[#00ffff] group-hover:text-[#FFD700] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  </div>
+                  <span className="font-mono text-xs text-white/30 tracking-widest group-hover:text-[#FFD700]/80 transition-colors">01 //</span>
+                </div>
+                <h4 className="text-xl font-bold text-white mb-4 tracking-wide group-hover:text-[#FFD700] transition-colors">Recognise your team</h4>
+                <p className="text-sm md:text-base text-white/50 leading-relaxed font-light group-hover:text-white/80 transition-colors">
+                  There's no better recognition for your team's hard work than winning or being shortlisted for an award. Celebrate excellence on a premier stage.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Card 2 */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -10 }}
+              transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1], delay: 0.1 }}
+              className="relative bg-[#080d19] border border-[#1a253f] p-8 group hover:border-[#FFD700]/50 transition-all duration-500 overflow-hidden hover:shadow-[0_0_40px_rgba(255,215,0,0.15)] cursor-pointer"
+            >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[#00ffff]/0 group-hover:bg-[#FFD700]/10 blur-[50px] transition-all duration-700 rounded-full pointer-events-none" />
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00ffff]/50 group-hover:border-[#FFD700] group-hover:w-8 group-hover:h-8 transition-all duration-500" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00ffff]/50 group-hover:border-[#FFD700] group-hover:w-8 group-hover:h-8 transition-all duration-500" />
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0)_95%,rgba(0,255,255,0.05)_100%)] bg-[length:100%_4px] group-hover:opacity-50 transition-opacity duration-500" />
+              
+              <div className="relative z-10 transform group-hover:scale-[1.02] transition-transform duration-500">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="w-12 h-12 rounded bg-[#0b1426] border border-[#00ffff]/20 flex items-center justify-center group-hover:border-[#FFD700]/50 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-[0_0_0_rgba(0,255,255,0)] group-hover:shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+                    <svg className="w-6 h-6 text-[#00ffff] group-hover:text-[#FFD700] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </div>
+                  <span className="font-mono text-xs text-white/30 tracking-widest group-hover:text-[#FFD700]/80 transition-colors">02 //</span>
+                </div>
+                <h4 className="text-xl font-bold text-white mb-4 tracking-wide group-hover:text-[#FFD700] transition-colors">Be seen, celebrated</h4>
+                <p className="text-sm md:text-base text-white/50 leading-relaxed font-light group-hover:text-white/80 transition-colors">
+                  If you're passionate about your work and want to bring it to a wider audience, awards give you the ultimate platform to showcase your success.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Card 3 */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -10 }}
+              transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1], delay: 0.2 }}
+              className="relative bg-[#080d19] border border-[#1a253f] p-8 group hover:border-[#FFD700]/50 transition-all duration-500 overflow-hidden hover:shadow-[0_0_40px_rgba(255,215,0,0.15)] cursor-pointer"
+            >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[#00ffff]/0 group-hover:bg-[#FFD700]/10 blur-[50px] transition-all duration-700 rounded-full pointer-events-none" />
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00ffff]/50 group-hover:border-[#FFD700] group-hover:w-8 group-hover:h-8 transition-all duration-500" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00ffff]/50 group-hover:border-[#FFD700] group-hover:w-8 group-hover:h-8 transition-all duration-500" />
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0)_95%,rgba(0,255,255,0.05)_100%)] bg-[length:100%_4px] group-hover:opacity-50 transition-opacity duration-500" />
+              
+              <div className="relative z-10 transform group-hover:scale-[1.02] transition-transform duration-500">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="w-12 h-12 rounded bg-[#0b1426] border border-[#00ffff]/20 flex items-center justify-center group-hover:border-[#FFD700]/50 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-[0_0_0_rgba(0,255,255,0)] group-hover:shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+                    <svg className="w-6 h-6 text-[#00ffff] group-hover:text-[#FFD700] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <span className="font-mono text-xs text-white/30 tracking-widest group-hover:text-[#FFD700]/80 transition-colors">03 //</span>
+                </div>
+                <h4 className="text-xl font-bold text-white mb-4 tracking-wide group-hover:text-[#FFD700] transition-colors">Build your profile</h4>
+                <p className="text-sm md:text-base text-white/50 leading-relaxed font-light group-hover:text-white/80 transition-colors">
+                  Being shortlisted positions you and your organization as leaders in your field, which can be leveraged to attract top-tier talent and future partners.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Card 4 */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -10 }}
+              transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1], delay: 0.3 }}
+              className="relative bg-[#080d19] border border-[#1a253f] p-8 group hover:border-[#FFD700]/50 transition-all duration-500 overflow-hidden hover:shadow-[0_0_40px_rgba(255,215,0,0.15)] cursor-pointer"
+            >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[#00ffff]/0 group-hover:bg-[#FFD700]/10 blur-[50px] transition-all duration-700 rounded-full pointer-events-none" />
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#00ffff]/50 group-hover:border-[#FFD700] group-hover:w-8 group-hover:h-8 transition-all duration-500" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00ffff]/50 group-hover:border-[#FFD700] group-hover:w-8 group-hover:h-8 transition-all duration-500" />
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0)_95%,rgba(0,255,255,0.05)_100%)] bg-[length:100%_4px] group-hover:opacity-50 transition-opacity duration-500" />
+              
+              <div className="relative z-10 transform group-hover:scale-[1.02] transition-transform duration-500">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="w-12 h-12 rounded bg-[#0b1426] border border-[#00ffff]/20 flex items-center justify-center group-hover:border-[#FFD700]/50 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-[0_0_0_rgba(0,255,255,0)] group-hover:shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+                    <svg className="w-6 h-6 text-[#00ffff] group-hover:text-[#FFD700] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                  </div>
+                  <span className="font-mono text-xs text-white/30 tracking-widest group-hover:text-[#FFD700]/80 transition-colors">04 //</span>
+                </div>
+                <h4 className="text-xl font-bold text-white mb-4 tracking-wide group-hover:text-[#FFD700] transition-colors">Amplify tech power</h4>
+                <p className="text-sm md:text-base text-white/50 leading-relaxed font-light group-hover:text-white/80 transition-colors">
+                  Be part of a positive story for the tech industry. Celebrate the enormous benefits the sector brings to the broader economy and our daily lives.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Award Categories Grid with Filtering */}
+        <section id="categories" className="max-w-[85vw] mx-auto pb-32">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-12 border-b border-white/10 pb-8 gap-6">
+            <div>
+              <h3 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">Award Categories</h3>
+              <p className="text-[#FFD700] text-lg font-medium">Explore the diverse domains of excellence</p>
+            </div>
+            
+            {/* Filter Bar with Drops Downs */}
+            <div className="flex flex-wrap items-center gap-4">
+               {/* Main Toggle */}
+               <div className="flex bg-[#111122] rounded-full p-1 border border-white/10">
+                 {['All', 'Organization', 'Individual'].map(f => (
+                   <button 
+                     key={f} 
+                     onClick={() => { setActiveFilter(f); setActiveSubFilter('All') }}
+                     className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeFilter === f ? 'bg-[#FFD700] text-black shadow-lg' : 'text-white/60 hover:text-white'}`}
+                   >
+                     {f}
+                   </button>
+                 ))}
+               </div>
+
+               {/* Sub Dropdown Filter representing those nested categories */}
+               {activeFilter === 'Organization' && (
+                 <select 
+                   value={activeSubFilter}
+                   onChange={e => setActiveSubFilter(e.target.value)}
+                   className="bg-[#111122] border border-[#FFD700]/30 rounded-full px-6 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-[#FFD700]"
+                 >
+                   <option value="All">All {activeFilter} Awards</option>
+                   {Array.from(new Set(awardCategories.filter(c => c.type === activeFilter).map(c => c.category))).map(cat => (
+                     <option key={cat} value={cat}>{cat}</option>
+                   ))}
+                 </select>
+               )}
+            </div>
+          </div>
+
+          {/* Animated "Fire Grid" Layout restored */}
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-14">
+            <AnimatePresence mode='popLayout'>
+              {filteredCategories.map((category) => (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 40 }}
+                  transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+                  key={category.id}
+                  whileHover={{ scale: 1.02 }}
+                  className="group relative p-8 rounded-[1.5rem] bg-gradient-to-b from-[#111122] to-[#0a0a15] border border-white/5 hover:border-[#FFD700]/50 hover:shadow-[0_0_30px_rgba(255,215,0,0.15)] transition-all duration-500 ease-out cursor-pointer overflow-hidden flex flex-col justify-between min-h-[280px]"
+                >
+                  <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#FFD700] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-[#FFD700] rounded-full blur-[80px] opacity-0 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none" />
+
+                  <div className="relative z-10">
+                    <div className="flex justify-between items-center mb-8">
+                      <span className="px-4 py-1.5 bg-black/50 border border-[#FFD700]/30 text-[#FFD700] rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+                        {category.category}
+                      </span>
+                    </div>
+                    <h4 className="text-2xl font-black tracking-tight mb-4 text-white group-hover:text-white transition-colors pr-4 leading-tight">
+                      {category.title}
+                    </h4>
+                  </div>
+                  
+                  <div 
+                    className="relative z-10 mt-8 flex items-center gap-3 text-[#FFD700] font-bold text-sm tracking-wider uppercase opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 w-max"
+                    onClick={() => document.getElementById('nominate')?.scrollIntoView({ behavior: 'smooth'})}
+                  >
+                    <span>Nominate</span>
+                    <svg className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        </section>
+
+        {/* Register / Nominate Now Section */}
+        <section id="nominate" className="max-w-[85vw] mx-auto pb-32 pt-10">
+          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#0a0a1a] rounded-[2.5rem] border border-white/10 p-8 md:p-16 relative overflow-hidden shadow-2xl">
+            {/* Background decoration */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#FFD700]/5 rounded-full blur-[100px] pointer-events-none transform translate-x-1/3 -translate-y-1/4" />
+            
+            <div className="relative z-10 flex flex-col lg:flex-row gap-16 h-full">
+              
+              <div className="flex-1 flex flex-col justify-center">
+                <h3 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6">
+                  Submit a <br/><span className="text-[#FFD700]">Nomination</span>
+                </h3>
+                <p className="text-lg text-white/60 mb-10 max-w-md leading-relaxed">
+                  Join the ranks of the globally recognized innovators. Nominate yourself, your organization, or a peer for excellence in technology and leadership.
+                </p>
+                <div className="space-y-6 text-sm font-medium text-white/80">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full border border-[#FFD700]/30 flex flex-shrink-0 items-center justify-center bg-[#FFD700]/10 text-[#FFD700]">1</div>
+                    <p>Select your desired award category</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full border border-[#FFD700]/30 flex flex-shrink-0 items-center justify-center bg-[#FFD700]/10 text-[#FFD700]">2</div>
+                    <p>Fill in the critical details</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full border border-[#FFD700]/30 flex flex-shrink-0 items-center justify-center bg-[#FFD700]/10 text-[#FFD700]">3</div>
+                    <p>Our jury reviews the comprehensive submission</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <form className="bg-[#050510]/80 backdrop-blur-xl border border-white/10 p-8 rounded-3xl space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold text-white/60 uppercase tracking-widest">Full Name</label>
+                       <input type="text" placeholder="John Doe" className="w-full bg-[#111122] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#FFD700]/50 transition-colors" />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold text-white/60 uppercase tracking-widest">Email Address</label>
+                       <input type="email" placeholder="john@example.com" className="w-full bg-[#111122] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#FFD700]/50 transition-colors" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-xs font-bold text-white/60 uppercase tracking-widest">Company / Organization</label>
+                     <input type="text" placeholder="Acme Corp" className="w-full bg-[#111122] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#FFD700]/50 transition-colors" />
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-xs font-bold text-white/60 uppercase tracking-widest">Nomination Category</label>
+                     <select className="w-full bg-[#111122] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#FFD700]/50 transition-colors appearance-none">
+                       <option>Select a category...</option>
+                       <optgroup label="Organization Categories">
+                         {awardCategories.filter(c => c.type === 'Organization').map(cat => <option key={cat.id} value={cat.id}>{cat.title}</option>)}
+                       </optgroup>
+                       <optgroup label="Individual Categories">
+                         {awardCategories.filter(c => c.type === 'Individual').map(cat => <option key={cat.id} value={cat.id}>{cat.title}</option>)}
+                       </optgroup>
+                     </select>
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-xs font-bold text-white/60 uppercase tracking-widest">Brief Reason for Nomination</label>
+                     <textarea rows={4} placeholder="Tell us why this nominee deserves the award..." className="w-full bg-[#111122] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#FFD700]/50 transition-colors resize-none" />
+                  </div>
+                  <button type="button" className="w-full py-4 mt-2 rounded-xl bg-gradient-to-r from-[#FFD700] to-[#ffaa00] text-black font-bold tracking-widest uppercase hover:brightness-110 transition-all shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+                    Submit Nomination
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
